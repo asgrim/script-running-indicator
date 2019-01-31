@@ -28,6 +28,7 @@ class Indicator():
         item_quit = Gtk.MenuItem('Quit')
         item_quit.connect('activate', self.quit)
         menu.append(item_start)
+        menu.append(Gtk.SeparatorMenuItem())
         menu.append(item_quit)
         menu.show_all()
         return menu

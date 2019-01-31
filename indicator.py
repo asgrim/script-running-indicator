@@ -4,9 +4,10 @@ gi.require_version('AppIndicator3', '0.1')
 from gi.repository import Gtk
 from gi.repository import AppIndicator3
 import signal
+import os
 
 INDICATOR_NAME = 'script-running-indicator'
-INDICATOR_ICON = 'none set'
+INDICATOR_ICON_STOPPED = os.path.abspath('stopped.svg')
 
 def build_menu():
     menu = Gtk.Menu()
@@ -20,7 +21,7 @@ def quit(source):
     Gtk.main_quit()
 
 def main():
-    indicator = AppIndicator3.Indicator.new(INDICATOR_NAME, INDICATOR_ICON,
+    indicator = AppIndicator3.Indicator.new(INDICATOR_NAME, INDICATOR_ICON_STOPPED,
                                             AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
     indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
     indicator.set_menu(build_menu())

@@ -19,6 +19,7 @@ class Indicator():
                                                 AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
         self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
         self.indicator.set_menu(self.build_menu())
+        self.indicator.set_label('Stopped', 'Stopped')
         self.running_process = None
 
     def build_menu(self):
@@ -36,7 +37,7 @@ class Indicator():
     def start_process(self, source):
         running_indicator_set = False
         self.indicator.set_icon_full(INDICATOR_ICON_STARTING, 'Starting')
-        self.indicator.set_label('HELLO')
+        self.indicator.set_label('Starting...', 'Starting...')
         print('starting')
 
         self.running_process = subprocess.Popen(SCRIPT_TO_RUN)
@@ -45,9 +46,11 @@ class Indicator():
                 print('running')
                 running_indicator_set = True
                 self.indicator.set_icon_full(INDICATOR_ICON_RUNNING, 'Running')
+                self.indicator.set_label('Running', 'Running')
 
         print('stopped')
         self.indicator.set_icon_full(INDICATOR_ICON_STOPPED, 'Stopped')
+        self.indicator.set_label('Stopped', 'Stopped')
 
     def quit(self, source):
         Gtk.main_quit()

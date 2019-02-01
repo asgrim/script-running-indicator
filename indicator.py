@@ -1,10 +1,11 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
-from gi.repository import Gtk, AppIndicator3
+from gi.repository import Gtk, AppIndicator3, GLib
 import signal
 import os
 import subprocess
+import time
 
 INDICATOR_NAME = 'script-running-indicator'
 INDICATOR_ICON_STOPPED = os.path.abspath('stopped.svg')
@@ -21,6 +22,7 @@ class Indicator():
         self.indicator.set_menu(self.build_menu())
         self.indicator.set_label('Stopped', 'Stopped')
         self.running_process = None
+        GLib.timeout_add_seconds(1, self.update)
 
     def build_menu(self):
         menu = Gtk.Menu()
@@ -34,23 +36,33 @@ class Indicator():
         menu.show_all()
         return menu
 
-    def start_process(self, source):
-        running_indicator_set = False
+    def update(self):
+        print("update " + time.asctime())
+        if self.running_process is not None and self.running_process.poll() is None:
+            self.set_icon_running()
+        else:
+            self.set_icon_stopped()
+        return True
+
+    def set_icon_starting(self):
+        print('updating icon - Starting')
         self.indicator.set_icon_full(INDICATOR_ICON_STARTING, 'Starting')
         self.indicator.set_label('Starting...', 'Starting...')
-        print('starting')
 
-        self.running_process = subprocess.Popen(SCRIPT_TO_RUN)
-        while self.running_process.poll() is None:
-            if not running_indicator_set:
-                print('running')
-                running_indicator_set = True
-                self.indicator.set_icon_full(INDICATOR_ICON_RUNNING, 'Running')
-                self.indicator.set_label('Running', 'Running')
+    def set_icon_running(self):
+        print('updating icon - Running')
+        self.indicator.set_icon_full(INDICATOR_ICON_RUNNING, 'Running')
+        self.indicator.set_label('Running', 'Running')
 
-        print('stopped')
+    def set_icon_stopped(self):
+        print('updating icon - Stopped')
         self.indicator.set_icon_full(INDICATOR_ICON_STOPPED, 'Stopped')
         self.indicator.set_label('Stopped', 'Stopped')
+
+    def start_process(self, source):
+        print('starting')
+        self.set_icon_starting()
+        self.running_process = subprocess.Popen(SCRIPT_TO_RUN)
 
     def quit(self, source):
         Gtk.main_quit()

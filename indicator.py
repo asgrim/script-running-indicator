@@ -11,7 +11,7 @@ INDICATOR_NAME = 'script-running-indicator'
 INDICATOR_ICON_STOPPED = os.path.abspath('stopped.svg')
 INDICATOR_ICON_RUNNING = os.path.abspath('running.svg')
 INDICATOR_ICON_STARTING = os.path.abspath('starting.svg')
-SCRIPT_TO_RUN = ['sleep', '15']
+SCRIPT_TO_RUN = ['sleep', '30']
 
 
 class Indicator():
@@ -26,18 +26,17 @@ class Indicator():
 
     def build_menu(self):
         menu = Gtk.Menu()
-        item_start = Gtk.MenuItem('Run the script')
-        item_start.connect('activate', self.start_process)
+        self.item_startstop = Gtk.MenuItem('Run the script')
+        self.item_startstop.connect('activate', self.toggle_process)
         item_quit = Gtk.MenuItem('Quit')
         item_quit.connect('activate', self.quit)
-        menu.append(item_start)
+        menu.append(self.item_startstop)
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(item_quit)
         menu.show_all()
         return menu
 
     def update(self):
-        print("update " + time.asctime())
         if self.running_process is not None and self.running_process.poll() is None:
             self.set_icon_running()
         else:
@@ -45,26 +44,41 @@ class Indicator():
         return True
 
     def set_icon_starting(self):
-        print('updating icon - Starting')
         self.indicator.set_icon_full(INDICATOR_ICON_STARTING, 'Starting')
         self.indicator.set_label('Starting...', 'Starting...')
 
     def set_icon_running(self):
-        print('updating icon - Running')
         self.indicator.set_icon_full(INDICATOR_ICON_RUNNING, 'Running')
         self.indicator.set_label('Running', 'Running')
 
     def set_icon_stopped(self):
-        print('updating icon - Stopped')
         self.indicator.set_icon_full(INDICATOR_ICON_STOPPED, 'Stopped')
         self.indicator.set_label('Stopped', 'Stopped')
+        if self.running_process is not None:
+            self.running_process = None
+            self.item_startstop.set_label('Run the script')
+
+    def toggle_process(self, source):
+        if self.running_process is not None:
+            self.kill_process(source)
+        else:
+            self.start_process(source)
 
     def start_process(self, source):
         print('starting')
         self.set_icon_starting()
+        self.item_startstop.set_label('Kill the script')
         self.running_process = subprocess.Popen(SCRIPT_TO_RUN)
 
+    def kill_process(self, source):
+        if self.running_process is not None:
+            print('killing subprocess')
+            self.running_process.send_signal(signal.SIGINT)
+            self.running_process = None
+        self.item_startstop.set_label('Run the script')
+
     def quit(self, source):
+        self.kill_process(source)
         Gtk.main_quit()
 
 
